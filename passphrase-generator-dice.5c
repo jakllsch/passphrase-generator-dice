@@ -1,0 +1,39 @@
+#!/usr/bin/env nickle
+
+poly howmany(poly x, poly y) {
+	return (((x)+((y)-1))//(y));
+}
+
+int getrandom(string randfile, int nbytes) {
+	file randdatafile = File::open(randfile, "r");
+	int randdata = 0;
+	for(int i = 0; i < nbytes; i++) {
+		int data = File::getb(randdatafile);
+		if (File::error(randdatafile) || File::end(randdatafile))
+			exit(1);
+		if (data < 0 || data > 255)
+			exit(1);
+		randdata <<= 8;
+		randdata += data;
+	}
+	File::close(randdatafile);
+	return randdata;
+}
+
+nrolls = atoi(argv[1]);
+nwords = atoi(argv[2]);
+total = 6**(nrolls * nwords);
+bits = nrolls * nwords * log(6) / log(2);
+bytes = howmany(ceil(bits), 8);
+random = getrandom(argv[3], bytes);
+File::fprintf(stderr, "%g rolls, %g phrasewords\n%g bits entropy needs %g random bytes\n0x%x random value\n0x%x total combos\n", nrolls, nwords, bits, bytes, random, total);
+
+for (j = 0; j < nwords; j++) {
+	word = 0;
+	for (i = 0; i < nrolls; i++) {
+		word += (random % 6 + 1) * 10 ** i;
+		random //= 6;
+	}
+	printf("%g\n", word);
+}
+File::fprintf(stderr, "random value remaining: 0x%x\n", random);
